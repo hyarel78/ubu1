@@ -1,0 +1,118 @@
+Helm itself does not create a "helm folder" after installation.
+
+Check Helm Installation
+Shell
+helm version
+
+Locate Helm binary:
+
+Shell
+which helm
+
+Example:
+
+Shell
+/usr/local/bin/helm
+
+or
+
+Shell
+/usr/bin/helm
+Helm Configuration Location
+
+Check Helm environment:
+
+Shell
+helm env
+
+Typical directories:
+
+Plain Text
+HELM_CACHE_HOME=/root/.cache/helm
+HELM_CONFIG_HOME=/root/.config/helm
+HELM_DATA_HOME=/root/.local/share/helm
+
+View them:
+
+Shell
+ls -la ~/.config/helm
+ls -la ~/.cache/helm
+ls -la ~/.local/share/helm
+Where Helm Stores Repositories
+Shell
+~/.config/helm/repositories.yaml
+
+View:
+
+Shell
+cat ~/.config/helm/repositories.yaml
+Where Downloaded Charts Are Stored
+
+If you run:
+
+Shell
+helm pull bitnami/nginx
+
+A file appears in your current directory:
+
+Plain Text
+nginx-<version>.tgz
+
+After extraction:
+
+Shell
+tar -xvf nginx-*.tgz
+
+You'll get:
+
+Plain Text
+nginx/
+├── Chart.yaml
+├── values.yaml
+├── templates/
+└── charts/
+
+This is what many people call the Helm chart folder.
+
+Create Your Own Helm Chart
+Shell
+helm create myapp
+
+This creates:
+
+Plain Text
+myapp/
+├── Chart.yaml
+├── values.yaml
+├── charts/
+└── templates/
+├── deployment.yaml
+├── service.yaml
+└── ingress.yaml
+
+Verify:
+
+Shell
+tree myapp
+
+If your goal is to use Helm with ArgoCD, run:
+
+Shell
+helm create java-webapp
+
+and you'll get the complete Helm chart folder structure that can be pushed to GitHub and deployed using ArgoCD.
+
+Show the Helm chart structureCustomize values.yamlCreate an Argo CD application
+FilesFiles
+
+
+
+
+Message Copilot
+Add content
+Upload images and files
+Attach cloud files
+Generate an image
+Draft page or code
+More
+Chat with agents and skills
