@@ -1,0 +1,160 @@
+1. Install Minikube
+Install Docker (if not already installed)
+Shell
+sudo apt update
+sudo apt install -y docker.io
+ 
+sudo systemctl enable docker
+sudo systemctl start docker
+ 
+docker --version
+
+Add your user to Docker group:
+
+Shell
+sudo usermod -aG docker $USER
+newgrp docker
+Install kubectl
+Shell
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+ 
+chmod +x kubectl
+ 
+sudo mv kubectl /usr/local/bin/
+ 
+kubectl version --client
+Install Minikube
+Shell
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+ 
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+ 
+minikube version
+2. Start Minikube
+
+Using Docker driver:
+
+Shell
+minikube start --driver=docker
+
+Verify:
+
+Shell
+kubectl get nodes
+
+Expected:
+
+Shell
+NAME STATUS ROLES AGE
+minikube Ready control-plane 2m
+3. Create Multiple Pods
+Method 1: Deployment (Recommended)
+
+Create nginx-deploy.yaml
+
+YAML
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+name: nginx-deployment
+ 
+spec:
+replicas: 3
+ 
+selector:
+matchLabels:
+app: nginx
+ 
+template:
+metadata:
+labels:
+app: nginx
+ 
+spec:
+containers:
+- name: nginx
+image: nginx:latest
+ports:
+- containerPort: 80
+
+Deploy:
+
+Shell
+kubectl apply -f nginx-deploy.yaml
+
+Check pods:
+
+Shell
+kubectl get pods
+
+Output:
+
+Shell
+NAME READY STATUS
+nginx-deployment-xxxx1 1/1 Running
+nginx-deployment-xxxx2 1/1 Running
+nginx-deployment-xxxx3 1/1 Running
+ 
+4. Scale Pods
+
+Increase to 5 pods:
+
+Shell
+kubectl scale deployment nginx-deployment --replicas=5
+
+Verify:
+
+Shell
+kubectl get pods
+5. Expose Deployment
+
+Create service:
+
+Shell
+kubectl expose deployment nginx-deployment \
+--type=NodePort \
+--port=80
+
+Check service:
+
+Shell
+kubectl get svc
+
+Open application:
+
+Shell
+minikube service nginx-deployment
+6. Useful Commands
+List all pods
+Shell
+kubectl get pods
+List deployments
+Shell
+kubectl get deployments
+List services
+Shell
+kubectl get svc
+Describe pod
+Shell
+kubectl describe pod <pod-name>
+Pod logs
+Shell
+kubectl logs <pod-name>
+Delete deployment
+Shell
+kubectl delete deployment nginx-deployment
+Example for Learning Kubernetes
+
+Deploy 5 Nginx Pods:
+
+Shell
+kubectl create deployment nginx --image=nginx
+ 
+kubectl scale deployment nginx --replicas=5
+ 
+kubectl get pods
+
+This is the simplest way to practice Kubernetes concepts such as Pods → ReplicaSets → Deployments → Services on your Ubuntu VM before moving to a full cluster with kubeadm, EKS, AKS, or GKE.
+
+Show a multi-container pod exampleExplain Deployment vs PodAdd resource limits and probes
+FilesFiles
