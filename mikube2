@@ -1,0 +1,61 @@
+Run:
+
+Shell
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+Verify:
+
+Shell
+ls -l kubectl
+
+You should see something like:
+
+Plain Text
+-rwxr-xr-x 1 root root 60M kubectl
+Make executable
+Shell
+chmod +x kubectl
+Move to system path
+Shell
+sudo mv kubectl /usr/local/bin/
+Verify installation
+Shell
+kubectl version --client
+
+Expected:
+
+Plain Text
+Client Version: v1.xx.x
+ 
+Alternative (Ubuntu apt package)
+
+If the download method is failing:
+
+Shell
+sudo apt update
+sudo apt install -y kubernetes-client
+
+Verify:
+
+Shell
+kubectl version --client
+Check PATH
+
+After installation:
+
+Shell
+which kubectl
+
+Expected:
+
+Plain Text
+/usr/local/bin/kubectl
+
+If you're installing Minikube + kubectl + Helm + ArgoCD on your Ubuntu VM, run:
+
+Shell
+which kubectl
+which minikube
+which helm
+
+and share the output. That will confirm which components are installed and which still need to be configured.
