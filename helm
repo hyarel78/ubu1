@@ -1,0 +1,242 @@
+helm installation & configration 
+Since you're using Ubuntu VM and learning Kubernetes, Helm, ArgoCD, Prometheus, and Grafana, Helm is the package manager for Kubernetes. It helps you install applications like Nginx, Prometheus, Grafana, Jenkins, and ArgoCD with a single command.
+
+1. Verify Kubernetes Cluster
+Make sure Minikube is running:
+
+
+
+minikube status
+Check nodes:
+
+
+
+kubectl get nodes
+Expected:
+
+
+
+NAME       STATUS   ROLES           AGE
+minikube   Ready    control-plane
+2. Install Helm
+Download and Install
+
+
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+Verify installation:
+
+
+
+helm version
+Example output:
+
+
+
+version.BuildInfo{Version:"v3.x.x"}
+3. Check Helm Environment
+
+
+helm env
+List configured repositories:
+
+
+
+helm repo list
+Initially:
+
+
+
+Error: no repositories to show
+4. Add Helm Repository
+Add Bitnami repository:
+
+
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+Verify:
+
+
+
+helm repo list
+Output:
+
+
+
+NAME      URL
+bitnami   https://charts.bitnami.com/bitnami
+Update repositories:
+
+
+
+helm repo update
+5. Search Available Charts
+Search all charts:
+
+
+
+helm search repo
+Search Nginx:
+
+
+
+helm search repo nginx
+Search Jenkins:
+
+
+
+helm search repo jenkins
+Search PostgreSQL:
+
+
+
+helm search repo postgresql
+6. Install Nginx Using Helm
+
+
+helm install my-nginx bitnami/nginx
+Verify:
+
+
+
+helm list
+Check Pods:
+
+
+
+kubectl get pods
+Check Service:
+
+
+
+kubectl get svc
+7. Get Helm Release Details
+
+
+helm status my-nginx
+Get values:
+
+
+
+helm get values my-nginx
+8. Customize Values
+Download default configuration:
+
+
+
+helm show values bitnami/nginx > values.yaml
+Edit:
+
+
+
+vi values.yaml
+Example:
+
+
+
+replicaCount: 3
+Install using custom values:
+
+
+
+helm install my-nginx bitnami/nginx -f values.yaml
+9. Upgrade Helm Release
+Suppose you change replicas:
+
+
+
+replicaCount: 5
+ 
+Upgrade:
+
+
+
+helm upgrade my-nginx bitnami/nginx -f values.yaml
+Verify:
+
+
+
+kubectl get pods
+You should see 5 pods.
+
+10. Helm Rollback
+View revisions:
+
+
+
+helm history my-nginx
+Rollback:
+
+
+
+helm rollback my-nginx 1
+11. Uninstall Application
+
+
+helm uninstall my-nginx
+Verify:
+
+
+
+helm list
+12. Install Prometheus & Grafana
+Add repository:
+
+
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+ 
+helm repo update
+Install:
+
+
+
+helm install monitoring prometheus-community/kube-prometheus-stack
+Check:
+
+
+
+kubectl get pods
+This installs:
+
+Prometheus
+Grafana
+AlertManager
+Node Exporter
+Kubernetes monitoring components
+13. Install ArgoCD Using Helm
+Create namespace:
+
+
+
+kubectl create namespace argocd
+Add repo:
+
+
+
+helm repo add argo https://argoproj.github.io/argo-helm
+ 
+helm repo update
+Install:
+
+
+
+helm install argocd argo/argo-cd -n argocd
+Check:
+
+
+
+kubectl get pods -n argocd
+Most Important Helm Commands
+Command	Purpose
+helm version	Check Helm version
+helm repo list	List repositories
+helm repo add	Add repository
+helm repo update	Update repositories
+helm search repo nginx	Search charts
+helm install	Install application
+helm list	List releases
+helm status	Release status
+helm upgrade	Upgrade application
+helm history	View revisions
+helm rollback	Rollback release
+helm uninstall	Remove application
