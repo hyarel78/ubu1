@@ -1,0 +1,71 @@
+To remove a Helm chart release, use:
+
+Shell
+helm uninstall myapp
+
+Verify it's removed:
+
+Shell
+helm list
+
+If installed in a specific namespace:
+
+Shell
+helm uninstall myapp -n default
+Remove the Kubernetes resources created by the chart
+
+After uninstalling, check:
+
+Shell
+kubectl get all
+
+or
+
+Shell
+kubectl get pods
+
+The pods created by myapp should be gone.
+
+Remove the chart folder from disk
+
+If you also want to delete the chart files:
+
+Shell
+cd ..
+rm -rf myapp
+
+Verify:
+
+Shell
+ls
+Useful commands
+
+List Helm releases:
+
+Shell
+helm list -A
+
+Remove release:
+
+Shell
+helm uninstall myapp
+
+Delete chart directory:
+
+Shell
+rm -rf myapp
+
+Check pods:
+
+Shell
+kubectl get pods
+
+Since your release name is myapp, the command you'll most likely need is:
+
+Shell
+helm uninstall myapp
+
+This removes the deployment, replica sets, pods, and services created by that Helm release.
+
+Remove the chart directory tooUninstall from a namespaceCheck for leftover resources
+FilesFiles
