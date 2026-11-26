@@ -1,0 +1,249 @@
+Since you already have Minikube, kubectl, and Helm on your Ubuntu VM, follow these steps to install and configure ArgoCD.
+
+1. Create ArgoCD Namespace
+Shell
+kubectl create namespace argocd
+
+Verify:
+
+Shell
+kubectl get ns
+ 
+2. Install ArgoCD
+
+Apply the official manifest:
+
+Shell
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+Check pods:
+
+Shell
+kubectl get pods -n argocd
+
+Expected pods:
+
+Shell
+argocd-server
+argocd-application-controller
+argocd-repo-server
+argocd-dex-server
+argocd-redis
+
+Wait until all pods are:
+
+Shell
+Running
+3. Check ArgoCD Services
+Shell
+kubectl get svc -n argocd
+
+You should see:
+
+Shell
+argocd-server
+argocd-repo-server
+argocd-metrics
+ 
+4. Expose ArgoCD UI
+Option 1: Port Forward (Recommended for Minikube)
+
+Open a new terminal:
+
+Shell
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+ 
+
+Open browser:
+
+Plain Text
+https://localhost:8080
+
+Accept the SSL warning.
+
+Option 2: NodePort
+
+Patch service:
+
+Shell
+kubectl patch svc argocd-server -n argocd \
+-p '{"spec":{"type":"NodePort"}}'
+ 
+
+Check port:
+
+Shell
+kubectl get svc argocd-server -n argocd
+
+Example:
+
+Shell
+NAME TYPE PORT(S)
+argocd-server NodePort 80:32080/TCP
+
+Get Minikube IP:
+
+Shell
+minikube ip
+ 
+
+Open:
+
+Plain Text
+http://<MINIKUBE-IP>:32080
+5. Get Initial Admin Password
+
+Username:
+
+Plain Text
+admin
+
+Password:
+
+Shell
+kubectl -n argocd \
+get secret argocd-initial-admin-secret \
+-o jsonpath="{.data.password}" | base64 -d
+
+Example output:
+
+Shell
+mY7kLpXxA2
+
+Login with:
+
+Plain Text
+Username : admin
+Password : mY7kLpXxA2
+6. Install ArgoCD CLI
+
+Download:
+
+Shell
+curl -sSL -o argocd \
+https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+
+Make executable:
+
+Shell
+chmod +x argocd
+sudo mv argocd /usr/local/bin/
+
+Verify:
+
+Shell
+argocd version
+7. Login Using CLI
+Shell
+argocd login localhost:8080 \
+--username admin \
+--password <password> \
+--insecure
+
+Check:
+
+Shell
+argocd cluster list
+8. Add GitHub Repository
+
+Example:
+
+Shell
+argocd repo add \
+https://github.com/yourname/gitops-demo.git
+ 
+
+Verify:
+
+Shell
+argocd repo list
+9. Create First Application
+
+Suppose GitHub contains:
+
+Plain Text
+k8s/
+├── deployment.yaml
+└── service.yaml
+
+Create application:
+
+Shell
+argocd app create nginx-app \
+--repo https://github.com/yourname/gitops-demo.git \
+--path k8s \
+--dest-server https://kubernetes.default.svc \
+--dest-namespace default
+
+Sync:
+
+Shell
+argocd app sync nginx-app
+
+Check:
+
+Shell
+argocd app get nginx-app
+10. Auto Sync Configuration
+
+Enable GitOps auto-deployment:
+
+Shell
+argocd app set nginx-app \
+--sync-policy automated
+
+Now whenever code changes in GitHub:
+
+Plain Text
+GitHub Commit
+↓
+ArgoCD Detects Change
+↓
+Syncs Kubernetes
+↓
+Pods Updated
+11. Most Important ArgoCD Commands
+Shell
+kubectl get pods -n argocd
+Shell
+argocd app list
+Shell
+argocd app create
+Shell
+argocd app sync <app-name>
+Shell
+argocd app delete <app-name>
+Shell
+argocd repo list
+Shell
+argocd cluster list
+Shell
+argocd account update-password
+Real-Time Jenkins + Docker + Helm + ArgoCD Flow
+Plain Text
+Developer
+↓
+GitHub Source Code
+↓
+Jenkins Pipeline
+↓
+Maven Build
+↓
+Docker Image Build
+↓
+Push Image to Docker Hub
+↓
+Update Helm values.yaml
+↓
+Push to GitHub
+↓
+ArgoCD detects Git change
+↓
+Sync Kubernetes Cluster
+↓
+Pods Updated Automatically
+
+This is the complete GitOps workflow commonly used in real projects with GitHub + Jenkins + Docker + Kubernetes + Helm + ArgoCD.
+
+Create an ArgoCD Application YAMLConnect ArgoCD to a private GitHub repoTroubleshoot ArgoCD sync errors
+FilesFiles
