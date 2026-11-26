@@ -1,0 +1,116 @@
+The error in your screenshot is a Docker problem, not a Kubernetes problem.
+
+Error
+Plain Text
+docker-proxy: no such file or directory
+failed to start userland proxy
+
+This usually happens when the Docker installation is corrupted or incomplete.
+
+1. Check Docker Status
+Shell
+sudo systemctl status docker
+Shell
+docker version
+2. Verify docker-proxy Exists
+Shell
+which docker-proxy
+
+or
+
+Shell
+ls -l /usr/libexec/docker/docker-proxy
+
+or
+
+Shell
+find /usr -name docker-proxy
+
+If nothing is returned, Docker is missing the proxy binary.
+
+3. Reinstall Docker
+
+On Ubuntu:
+
+Shell
+sudo apt remove docker.io docker-ce docker-ce-cli -y
+sudo apt autoremove -y
+
+Install again:
+
+Shell
+sudo apt update
+sudo apt install docker.io -y
+
+Restart:
+
+Shell
+sudo systemctl enable docker
+sudo systemctl restart docker
+
+Verify:
+
+Shell
+docker run hello-world
+4. Delete and Recreate Minikube
+
+After Docker is fixed:
+
+Shell
+minikube delete
+
+Start again:
+
+Shell
+minikube start --driver=docker
+
+Check:
+
+Shell
+kubectl get nodes
+
+Expected:
+
+Plain Text
+minikube Ready
+5. If Using GitHub Codespaces
+
+I noticed your prompt contains:
+
+Plain Text
+/workspaces/ubu1/devmaven1
+
+This looks like a GitHub Codespace.
+
+In many Codespaces environments:
+
+Docker-in-Docker is restricted
+Minikube does not work reliably
+Port mapping may fail
+docker-proxy errors are common
+
+Check:
+
+Shell
+echo $CODESPACES
+
+If output is:
+
+Plain Text
+true
+
+then you're in a Codespace.
+
+For Kubernetes practice, it's better to use:
+
+Ubuntu VM (VirtualBox/VMware)
+Azure VM
+AWS EC2
+Local Ubuntu machine
+Please share the output of:
+Shell
+docker version
+which docker-proxy
+echo $CODESPACES
+
+and I'll tell you the exact fix for your environment.
