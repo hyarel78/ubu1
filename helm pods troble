@@ -1,0 +1,114 @@
+Step 1: Check which image is configured
+
+Run:
+
+Shell
+kubectl describe deployment myapp
+ 
+
+or
+
+Shell
+kubectl get deployment myapp -o yaml | grep image
+
+Example output:
+
+Plain Text
+image: hyarel78/java-webapp:v2
+Step 2: Check the exact error
+
+Run:
+
+Shell
+kubectl describe pod myapp-664896fcf4-2rlbz
+
+Look at the Events section at the bottom.
+
+Common errors:
+
+Plain Text
+pull access denied
+
+or
+
+Plain Text
+repository does not exist
+
+or
+
+Plain Text
+manifest unknown
+Step 3: Verify values.yaml
+
+Open:
+
+Shell
+nano values.yaml
+ 
+
+Look for:
+
+YAML
+image:
+repository: hyarel78/java-webapp
+tag: "v1"
+pullPolicy: IfNotPresent
+
+Make sure:
+
+Repository name is correct
+Tag exists in Docker Hub
+Step 4: Test image manually
+
+On the VM:
+
+Shell
+docker pull hyarel78/java-webapp:v1
+
+If this fails:
+
+Plain Text
+pull access denied
+
+then the image is:
+
+not pushed to Docker Hub
+private
+wrong repository name
+wrong tag
+Step 5: Push image to Docker Hub
+
+If image is local only:
+
+Shell
+docker login
+Shell
+docker images
+Shell
+docker tag java-webapp:v1 hyarel78/java-webapp:v1
+Shell
+docker push hyarel78/java-webapp:v1
+Step 6: Upgrade Helm
+
+After correcting values.yaml:
+
+Shell
+helm upgrade myapp ./myapp
+
+Check rollout:
+
+Shell
+kubectl rollout restart deployment myapp
+
+Verify:
+
+Shell
+kubectl get pods
+Most useful command right now
+
+Run:
+
+Shell
+kubectl describe pod myapp-664896fcf4-2rlbz
+
+and share the Events section at the bottom. That will show the exact reason for the ErrImagePull error.
