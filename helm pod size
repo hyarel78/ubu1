@@ -1,0 +1,92 @@
+From your screenshot, you're editing the autoscaling section:
+
+YAML
+autoscaling:
+enabled: false
+minReplicas: 5
+maxReplicas: 100
+ 
+
+⚠️ minReplicas and maxReplicas will not change the current pod count because:
+
+YAML
+enabled: false
+ 
+
+means HPA (Horizontal Pod Autoscaler) is disabled.
+
+To change pod count manually
+
+Find the top of values.yaml and change:
+
+YAML
+replicaCount: 1
+
+to:
+
+YAML
+replicaCount: 5
+ 
+
+Save the file.
+
+Then run:
+
+Shell
+helm upgrade myapp ./myapp
+
+Verify:
+
+Shell
+kubectl get pods
+
+Expected:
+
+Plain Text
+myapp-xxxxx 1/1 Running
+myapp-yyyyy 1/1 Running
+myapp-zzzzz 1/1 Running
+myapp-aaaaa 1/1 Running
+myapp-bbbbb 1/1 Running
+Check whether deployment uses replicaCount
+Shell
+grep replicas templates/deployment.yaml
+
+You should see:
+
+YAML
+replicas: {{ .Values.replicaCount }}
+
+If not, open:
+
+Shell
+nano templates/deployment.yaml
+
+and make sure it contains:
+
+YAML
+spec:
+replicas: {{ .Values.replicaCount }}
+
+Then:
+
+Shell
+helm upgrade myapp ./myapp
+Verify deployment size
+Shell
+kubectl get deployment myapp
+
+Output should be similar to:
+
+Plain Text
+NAME READY UP-TO-DATE AVAILABLE
+myapp 5/5 5 5
+
+You can also directly set 5 replicas without editing the file:
+
+Shell
+helm upgrade myapp ./myapp --set replicaCount=5
+
+This is the quickest Helm command to increase pods from 1 → 5.
+
+FilesFiles
