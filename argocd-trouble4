@@ -1,0 +1,122 @@
+The problem is now identified. ✅
+
+From your Events:
+
+Plain Text
+Container myapp failed liveness probe, will be restarted
+ 
+Readiness probe failed:
+dial tcp 10.x.x.x:80: connect: connection refused
+Root Cause
+
+Your application is running on:
+
+Plain Text
+Tomcat -> Port 8080
+
+We can see that in the logs:
+
+Plain Text
+Starting ProtocolHandler ["http-nio-8080"]
+
+But Kubernetes health checks are trying to access:
+
+Plain Text
+Port 80
+
+Error:
+
+Plain Text
+Readiness probe failed:
+Get "http://10.244.0.16:80/"
+connect: connection refused
+
+So Kubernetes thinks the application is unhealthy and keeps restarting it.
+
+Fix Deployment / Helm Chart
+
+Check your Helm chart:
+
+Shell
+cat myapp/templates/deployment.yaml
+
+Look for:
+
+YAML
+livenessProbe:
+httpGet:
+path: /
+port: 80
+ 
+readinessProbe:
+httpGet:
+path: /
+port: 80
+
+Change both to:
+
+YAML
+livenessProbe:
+httpGet:
+path: /
+port: 8080
+initialDelaySeconds: 60
+periodSeconds: 10
+ 
+readinessProbe:
+httpGet:
+path: /
+port: 8080
+initialDelaySeconds: 30
+periodSeconds: 10
+Also Check Container Port
+
+Make sure:
+
+YAML
+ports:
+- containerPort: 8080
+
+not:
+
+YAML
+ports:
+- containerPort: 80
+Apply Changes
+
+If using Helm:
+
+Shell
+helm upgrade myapp1 ./myapp
+
+If using ArgoCD:
+
+Shell
+git add .
+git commit -m "Fixed probes to use port 8080"
+git push origin master
+
+Then:
+
+Plain Text
+ArgoCD → SYNC
+Verify
+Shell
+kubectl get pods
+
+Expected:
+
+Plain Text
+myapp1-xxxxx 1/1 Running
+myapp1-yyyyy 1/1 Running
+myapp1-zzzzz 1/1 Running
+Quick Check
+
+Run:
+
+Shell
+grep -R "port: 80" myapp/templates
+
+I am almost certain you'll find the liveness/readiness probes configured to use port 80, while your Tomcat app listens on 8080. Changing the probe port to 8080 should stop the CrashLoopBackOff.
+
+FilesFiles
