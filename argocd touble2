@@ -1,0 +1,71 @@
+No, don't replace catalina.sh with bash.
+
+I was giving CMD ["bash"] only as an example of a possible mistake that can cause a container to exit.
+
+For a Tomcat application, your Dockerfile should look like:
+
+Dockerfile
+FROM tomcat:9.0
+ 
+COPY target/*.war /usr/local/tomcat/webapps/ROOT.war
+ 
+EXPOSE 8080
+ 
+CMD ["catalina.sh", "run"]
+
+catalina.sh run is correct because it keeps Tomcat running in the foreground.
+
+Your current issue is:
+
+Plain Text
+CrashLoopBackOff
+
+which means:
+
+Container starts
+Tomcat or application crashes
+Kubernetes restarts it
+After many failures → CrashLoopBackOff
+
+Since the image is pulling successfully:
+
+Plain Text
+Image: hyareldocker1/java-webdevops:v1
+
+the next step is to see the actual error inside the container.
+
+Run:
+
+Shell
+kubectl logs myapp1-74ff77bfcd-tqpxl
+
+If it restarts quickly:
+
+Shell
+kubectl logs myapp1-74ff77bfcd-tqpxl --previous
+
+Also run:
+
+Shell
+kubectl describe pod myapp1-74ff77bfcd-tqpxl
+
+and look at the Events section at the bottom.
+
+The logs will tell us whether the problem is:
+
+WAR file not found
+Tomcat startup error
+Java exception
+Port mismatch
+File path error
+Wrong Dockerfile command
+
+Paste the output of:
+
+Shell
+kubectl logs myapp1-74ff77bfcd-tqpxl --previous
+
+and I'll identify the exact root cause.
+
+Show the previous container logsCheck the Dockerfile CMDExplain the CrashLoopBackOff error
+FilesFiles
