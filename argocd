@@ -1,5 +1,5 @@
 Since you already have Minikube, kubectl, and Helm on your Ubuntu VM, follow these steps to install and configure ArgoCD.
-
+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#######
 1. Create ArgoCD Namespace
 Shell
 kubectl create namespace argocd
