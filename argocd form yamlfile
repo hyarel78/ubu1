@@ -1,0 +1,76 @@
+Yes. You can create an ArgoCD application using an application YAML file instead of the UI.
+
+1. Create argocd-app.yaml
+YAML
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+name: webapp
+namespace: argocd
+ 
+spec:
+project: default
+ 
+source:
+repoURL: https://github.com/hyarel78/devmaster.git
+targetRevision: master
+path: myapp
+ 
+destination:
+server: https://kubernetes.default.svc
+namespace: default
+ 
+syncPolicy:
+automated:
+prune: true
+selfHeal: true
+ 
+syncOptions:
+- CreateNamespace=true
+2. Apply the Application
+Shell
+kubectl apply -f argocd-app.yaml
+3. Verify
+Shell
+kubectl get applications -n argocd
+
+Expected:
+
+Plain Text
+NAME SYNC STATUS HEALTH STATUS
+webapp Synced Healthy
+4. Check ArgoCD Application
+Shell
+kubectl describe application webapp -n argocd
+5. Sync Manually (if Auto Sync is disabled)
+Shell
+argocd app sync webapp
+6. See Deployed Resources
+Shell
+kubectl get deployment
+kubectl get pods
+kubectl get svc
+Since your Helm chart is in GitHub:
+Plain Text
+devmaster/
+└── myapp/
+├── Chart.yaml
+├── values.yaml
+└── templates/
+
+Use:
+
+YAML
+source:
+repoURL: https://github.com/hyarel78/devmaster.git
+targetRevision: master
+path: myapp
+
+ArgoCD will automatically detect Chart.yaml and treat myapp as a Helm chart.
+
+Apply it:
+
+Shell
+kubectl apply -f argocd-app.yaml
+
+and ArgoCD will deploy your Helm chart without creating the application through the UI.
