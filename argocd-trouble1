@@ -1,0 +1,229 @@
+our screenshot shows:
+
+Plain Text
+Unable to connect to the server:
+dial tcp 192.168.49.2:8443: connect: no route to host
+
+This usually means Minikube is stopped or the Kubernetes API server is not running.
+
+1. Check Minikube Status
+Shell
+minikube status
+
+If you see:
+
+Plain Text
+Stopped
+
+start it:
+
+Shell
+minikube start
+2. Verify Node
+
+After Minikube starts:
+
+Shell
+kubectl get nodes
+ 
+
+Expected:
+
+Plain Text
+NAME STATUS ROLES AGE
+minikube Ready control-plane
+3. Check Current Context
+Shell
+kubectl config current-context
+
+Expected:
+
+Plain Text
+minikube
+ 
+
+If not:
+
+Shell
+kubectl config use-context minikube
+4. Test Cluster Connectivity
+Shell
+kubectl cluster-info
+
+Expected:
+
+Plain Text
+Kubernetes control plane is running at https://192.168.49.2:8443
+5. Check ArgoCD Pods
+
+Once Minikube is running:
+
+Shell
+kubectl get pods -n argocd
+
+You should see:
+
+Plain Text
+argocd-server
+argocd-repo-server
+argocd-application-controller
+argocd-dex-server
+argocd-redis
+
+with status:
+
+Plain Text
+Running
+6. Open ArgoCD UI Again
+
+Run:
+
+Shell
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+Then open:
+
+Plain Text
+https://localhost:8080
+If minikube status Fails
+
+Run:
+
+Shell
+minikube delete
+minikube start --driver=docker
+
+Then:
+
+Shell
+kubectl get nodes
+kubectl get pods -n argocd
+
+Please run:
+
+Shell
+minikube status
+
+and share the output. That will confirm whether the cluster is stopped or if the kubeconfig needs fixing.
+
+
+
+
+Your Minikube cluster is now running again, but some ArgoCD pods are not healthy.
+
+From your screenshot:
+
+Plain Text
+argocd-dex-server 1/1 Running
+argocd-notifications-controller 1/1 Running
+argocd-applicationset-controller 1/1 Running
+ 
+argocd-application-controller-0 0/1 Running
+argocd-repo-server 0/1 Running
+argocd-redis 0/1 Unknown
+argocd-server 0/1 Running
+
+The biggest issue is:
+
+Plain Text
+argocd-redis 0/1 Unknown
+Check why ArgoCD pods are failing
+
+Run:
+
+Shell
+kubectl describe pod argocd-redis-86d4d669f7-qq8b5 -n argocd
+
+Check logs:
+
+Shell
+kubectl logs argocd-redis-86d4d669f7-qq8b5 -n argocd
+Check Node Status
+Shell
+kubectl get nodes
+
+Should show:
+
+Plain Text
+minikube Ready
+Restart ArgoCD Pods
+Shell
+kubectl delete pod --all -n argocd
+
+Kubernetes will recreate them automatically.
+
+Watch:
+
+Shell
+kubectl get pods -n argocd -w
+
+Wait until all become:
+
+Plain Text
+1/1 Running
+If still not healthy
+
+Restart deployments:
+
+Shell
+kubectl rollout restart deployment -n argocd
+
+Restart StatefulSet:
+
+Shell
+kubectl rollout restart statefulset argocd-application-controller -n argocd
+ 
+Verify ArgoCD Service
+Shell
+kubectl get svc -n argocd
+
+Then start port forwarding:
+
+Shell
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+Open:
+
+Plain Text
+https://localhost:8080
+Also check your application pods
+
+I noticed:
+
+Plain Text
+myapp-5975788f87-* 0/1 Running
+
+These are not healthy.
+
+Check:
+
+Shell
+kubectl describe pod <pod-name>
+
+Example:
+
+Shell
+kubectl describe pod myapp-5975788f87-4vtrb
+
+and
+
+Shell
+kubectl logs myapp-5975788f87-4vtrb
+
+The problem is likely:
+
+Wrong container image
+Application crash
+Port mismatch
+Missing WAR file
+Run these commands and share the outputs:
+Shell
+kubectl get nodes
+ 
+kubectl get pods -n argocd
+ 
+kubectl describe pod argocd-redis-86d4d669f7-qq8b5 -n argocd
+ 
+kubectl logs argocd-redis-86d4d669f7-qq8b5 -n argocd
+
+That will identify the exact reason ArgoCD isn't fully starting.
