@@ -1,0 +1,130 @@
+The logs show the root cause:
+
+Plain Text
+Server startup in [2061] milliseconds
+...
+Deploying web application archive [/usr/local/tomcat/webapps/ROOT.war]
+...
+Deployment of web application archive [...] has finished
+...
+Starting ProtocolHandler ["http-nio-8080"]
+
+Then about 24 seconds later:
+
+Plain Text
+Pausing ProtocolHandler ["http-nio-8080"]
+Stopping service [Catalina]
+Destroying ProtocolHandler ["http-nio-8080"]
+What this means
+
+✅ Tomcat starts successfully
+ ✅ WAR file deploys successfully
+ ✅ Application starts successfully
+ ✅ Image is OK
+
+❌ Something is stopping the container after startup.
+
+This is usually caused by one of these:
+
+Check pod events
+
+Run:
+
+Shell
+kubectl describe pod myapp1-74ff77bfcd-tqpxl
+
+Look for:
+
+Plain Text
+Liveness probe failed
+Readiness probe failed
+OOMKilled
+Killing container
+
+at the bottom under Events.
+
+Check deployment configuration
+
+Run:
+
+Shell
+kubectl get deployment myapp1 -o yaml
+
+Look for something like:
+
+YAML
+livenessProbe:
+httpGet:
+path: /
+port: 80
+
+If your container listens on:
+
+Plain Text
+8080
+
+but probe checks:
+
+Plain Text
+80
+
+then Kubernetes will continuously kill the pod.
+
+A correct probe would be:
+
+YAML
+livenessProbe:
+httpGet:
+path: /
+port: 8080
+ 
+readinessProbe:
+httpGet:
+path: /
+port: 8080
+Check if pod is OOMKilled
+
+Run:
+
+Shell
+kubectl describe pod myapp1-74ff77bfcd-tqpxl | grep -A5 State
+ 
+
+If you see:
+
+Plain Text
+Reason: OOMKilled
+
+increase memory:
+
+YAML
+resources:
+limits:
+memory: 1024Mi
+requests:
+memory: 512Mi
+Most important command now
+
+Run:
+
+Shell
+kubectl describe pod myapp1-74ff77bfcd-tqpxl
+
+and share the Events section at the bottom.
+
+The logs prove the Java application starts successfully, so the next clue is in the pod events showing why Kubernetes is killing it.
+
+FilesFiles
+
+
+
+
+Message Copilot
+Add content
+Upload images and files
+Attach cloud files
+Generate an image
+Draft page or code
+More
+Chat with agents and skills
+AI-genera
