@@ -1,0 +1,363 @@
+nano deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+
+
+
+wq
+        ----------------------
+
+
+        Apply:
+
+Shell
+kubectl apply -f deployment.yaml
+
+Verify:
+
+Shell
+kubectl get pods
+
+
+
+-----------
+
+Kubernetes Operational Commands Cheat Sheet (with Comments)
+1. Cluster Information
+Shell
+# Check cluster information
+kubectl cluster-info
+ 
+# Display client and server versions
+kubectl version
+ 
+# View all cluster nodes
+kubectl get nodes
+ 
+# Get detailed node information
+kubectl describe node <node-name>
+
+Example:
+
+Shell
+kubectl describe node minikube
+2. Namespace Commands
+Shell
+# List all namespaces
+kubectl get ns
+ 
+# Create namespace
+kubectl create namespace dev
+ 
+# Delete namespace
+kubectl delete namespace dev
+ 
+# Switch namespace for current context
+kubectl config set-context --current --namespace=dev
+3. Pod Commands
+Shell
+# Show pods in current namespace
+kubectl get pods
+ 
+# Show pods in all namespaces
+kubectl get pods -A
+ 
+# Show pod IP and node details
+kubectl get pods -o wide
+ 
+# Detailed pod information
+kubectl describe pod <pod-name>
+ 
+# Delete pod
+kubectl delete pod <pod-name>
+ 
+# Watch pod status continuously
+kubectl get pods -w
+
+Example:
+
+Shell
+kubectl describe pod nginx-7c89d6bcb6-p4mzp
+4. Create Pods
+Shell
+# Run nginx pod
+kubectl run nginx --image=nginx
+ 
+# Run ubuntu pod
+kubectl run ubuntu --image=ubuntu
+ 
+# Run busybox pod
+kubectl run busybox --image=busybox
+
+Verify:
+
+Shell
+kubectl get pods
+5. Execute Commands Inside Pod
+Shell
+# Open shell inside pod
+kubectl exec -it <pod-name> -- bash
+ 
+# Open sh shell
+kubectl exec -it <pod-name> -- sh
+ 
+# Run a single command
+kubectl exec -it <pod-name> -- ls
+
+Example:
+
+Shell
+kubectl exec -it nginx -- bash
+6. Pod Logs
+Shell
+# Show pod logs
+kubectl logs <pod-name>
+ 
+# Follow logs live
+kubectl logs -f <pod-name>
+ 
+# Logs from previous container
+kubectl logs --previous <pod-name>
+
+Example:
+
+Shell
+kubectl logs -f nginx
+7. Deployment Commands
+Shell
+# Create deployment
+kubectl create deployment nginx --image=nginx
+ 
+# List deployments
+kubectl get deployments
+ 
+# Detailed deployment info
+kubectl describe deployment nginx
+ 
+# Delete deployment
+kubectl delete deployment nginx
+8. Scaling Pods
+Shell
+# Scale to 3 pods
+kubectl scale deployment nginx --replicas=3
+ 
+# Scale to 5 pods
+kubectl scale deployment nginx --replicas=5
+ 
+# Check replicas
+kubectl get deployments
+
+Example:
+
+Shell
+kubectl scale deployment nginx --replicas=10
+9. Service Commands
+Shell
+# View services
+kubectl get svc
+ 
+# Create ClusterIP service
+kubectl expose deployment nginx --port=80
+ 
+# Create NodePort service
+kubectl expose deployment nginx --type=NodePort --port=80
+ 
+# Delete service
+kubectl delete svc nginx
+10. Deployment Rollout Commands
+Shell
+# Check rollout status
+kubectl rollout status deployment nginx
+ 
+# Rollback deployment
+kubectl rollout undo deployment nginx
+ 
+# View rollout history
+kubectl rollout history deployment nginx
+ 
+# Restart deployment
+kubectl rollout restart deployment nginx
+11. YAML Commands
+Shell
+# Apply YAML file
+kubectl apply -f deployment.yaml
+ 
+# Delete resources from YAML
+kubectl delete -f deployment.yaml
+ 
+# Validate YAML
+kubectl apply --dry-run=client -f deployment.yaml
+ 
+# Show generated YAML
+kubectl apply -f deployment.yaml --dry-run=client -o yaml
+12. ConfigMap Commands
+Shell
+# Create ConfigMap
+kubectl create configmap app-config --from-literal=env=prod
+ 
+# Get ConfigMaps
+kubectl get configmap
+ 
+# Describe ConfigMap
+kubectl describe configmap app-config
+ 
+# Delete ConfigMap
+kubectl delete configmap app-config
+13. Secret Commands
+Shell
+# Create secret
+kubectl create secret generic db-secret \
+--from-literal=username=admin \
+--from-literal=password=admin123
+ 
+# List secrets
+kubectl get secrets
+ 
+# Describe secret
+kubectl describe secret db-secret
+ 
+# Delete secret
+kubectl delete secret db-secret
+14. Resource Monitoring
+Shell
+# Node resource usage
+kubectl top nodes
+ 
+# Pod resource usage
+kubectl top pods
+
+Requires metrics server.
+
+15. Minikube Commands
+Shell
+# Start cluster
+minikube start
+ 
+# Stop cluster
+minikube stop
+ 
+# Delete cluster
+minikube delete
+ 
+# Cluster status
+minikube status
+ 
+# Get cluster IP
+minikube ip
+ 
+# Open dashboard
+minikube dashboard
+16. Important Debugging Commands
+Shell
+# Everything in namespace
+kubectl get all
+ 
+# All namespaces
+kubectl get all -A
+ 
+# Events
+kubectl get events
+ 
+# Sort events
+kubectl get events --sort-by=.metadata.creationTimestamp
+ 
+# Detailed pod troubleshooting
+kubectl describe pod <pod-name>
+17. Ingress Commands
+Shell
+# View ingress
+kubectl get ingress
+ 
+# Describe ingress
+kubectl describe ingress nginx-ingress
+ 
+# Apply ingress file
+kubectl apply -f ingress.yaml
+18. Helm Commands
+Shell
+# Add repository
+helm repo add bitnami https://charts.bitnami.com/bitnami
+ 
+# Update repo
+helm repo update
+ 
+# Search chart
+helm search repo nginx
+ 
+# Install chart
+helm install myapp bitnami/nginx
+ 
+# List releases
+helm list
+ 
+# Upgrade release
+helm upgrade myapp bitnami/nginx
+ 
+# Uninstall release
+helm uninstall myapp
+19. ArgoCD Commands
+Shell
+# Login to ArgoCD
+argocd login localhost:8080
+ 
+# List applications
+argocd app list
+ 
+# Get application details
+argocd app get myapp
+ 
+# Sync application
+argocd app sync myapp
+ 
+# Delete application
+argocd app delete myapp
+20. Most Common Daily Commands (DevOps Engineers Use Daily)
+Shell
+kubectl get nodes
+kubectl get pods -A
+kubectl get svc
+kubectl get deployments
+kubectl logs -f <pod-name>
+kubectl describe pod <pod-name>
+kubectl exec -it <pod-name> -- bash
+kubectl apply -f deployment.yaml
+kubectl delete -f deployment.yaml
+kubectl scale deployment nginx --replicas=5
+kubectl rollout restart deployment nginx
+kubectl top pods
+kubectl top nodes
+kubectl get events
+kubectl get all
+Real Interview Commands
+Shell
+kubectl get pods -o wide
+kubectl get all -A
+kubectl describe pod <pod-name>
+kubectl logs -f <pod-name>
+kubectl exec -it <pod-name> -- bash
+kubectl rollout undo deployment nginx
+kubectl scale deployment nginx --replicas=5
+kubectl get events --sort-by=.metadata.creationTimestamp
+
+These ~50 commands cover about 90% of Kubernetes operations used in DevOps projects with Jenkins → Docker → Kubernetes → Helm → ArgoCD workflows.
+
+Add troubleshooting examplesCreate a printable cheat sheet
+
